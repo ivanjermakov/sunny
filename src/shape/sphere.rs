@@ -12,21 +12,18 @@ pub struct Sphere {
 impl Shape for Sphere {
     /// [guide](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection.html)
     fn reflect(&self, ray: &Ray) -> Option<Ray> {
-        let dir = ray.dir.norm();
-        let c = self.center;
-        let o = ray.start;
-        let l = c - o;
-        let t_ca = l.dot(&dir);
+        let l = self.center - ray.start;
+        let t_ca = l.dot(&ray.dir);
         if t_ca < 0. {
             return None;
         }
         let d = hypot(l.mag(), t_ca);
-        dbg!(dir, l, t_ca, d);
+        dbg!(ray.dir, l, t_ca, d);
         if d > self.radius {
             return None;
         }
         let t_hc = hypot(self.radius, d);
-        let p1 = o + dir * Vec3::diag(t_ca - t_hc);
+        let p1 = ray.with_param(t_ca - t_hc);
 
         // TODO: reflection
 
