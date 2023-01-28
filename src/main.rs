@@ -20,7 +20,7 @@ pub mod vec3;
 
 fn main() {
     let asp_ratio = 16. / 9.;
-    let width = 2560.;
+    let width = 2560. * 2.;
     let vp_width = 6.;
     let scene = Scene {
         camera: Camera {
@@ -40,7 +40,7 @@ fn main() {
                 material: Material {
                     diffusion: 0.,
                     reflection: 1.,
-                    color: Color::BLUE,
+                    color: Color::WHITE,
                     luminosity: 10.,
                 },
             },
@@ -95,7 +95,8 @@ fn main() {
         ],
     };
 
-    scene.render().save_ppm("data/scene.ppm").ok();
+    let image = scene.render();
+    image.save_ppm("data/scene.ppm").ok();
 }
 
 #[cfg(test)]

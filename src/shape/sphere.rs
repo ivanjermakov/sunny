@@ -1,4 +1,4 @@
-use crate::math::hypot;
+use crate::math::sq_diff_root;
 use crate::ray::Ray;
 use crate::shape::Shape;
 use crate::vec3::Vec3;
@@ -17,11 +17,11 @@ impl Shape for Sphere {
         if t_ca < 0. {
             return None;
         }
-        let d = hypot(l.mag(), t_ca);
+        let d = sq_diff_root(l.mag(), t_ca);
         if d > self.radius {
             return None;
         }
-        let t_hc = hypot(self.radius, d);
+        let t_hc = sq_diff_root(self.radius, d);
         let p1 = ray.with_param(t_ca - t_hc);
 
         let normal = (p1 - self.center).norm();

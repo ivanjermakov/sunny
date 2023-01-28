@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::image::Image;
@@ -21,15 +19,12 @@ impl Scene {
         for y in 0..h {
             for x in 0..w {
                 let cr = self.camera.camera_ray(Vec3::new(x as f32, y as f32, 0.));
-                let bounces = self
-                    .ray_trace(&cr, vec![])
-                    .into_iter()
-                    .rev()
-                    .collect::<Vec<_>>();
+                let bounces = self.ray_trace(&cr, vec![]);
                 let color = if let Some((o, r)) = bounces.first() {
                     if o.material.luminosity > 0. {
                         let prev_r = bounces.get(1).map(|(_, r)| r).unwrap_or(&cr);
-                        let b = (r.dir.angle(&prev_r.dir) / PI).powf(1. / 3.);
+                        let cos = r.dir.cos_angle(&prev_r.dir);
+                        let b = (1. - (cos + 1.) / 2.).cbrt();
                         o.material.color.brightness(b)
                     } else {
                         Color::BLACK
@@ -52,11 +47,11 @@ impl Scene {
         ray: &Ray,
         mut rays: Vec<(&'a Object, Ray)>,
     ) -> Vec<(&Object, Ray)> {
-        if rays.len() > 1000 {
+        if rays.len() > 8 {
             return vec![];
         }
         if let Some((o, r)) = self.reflect(ray) {
-            rays.push((o, r));
+            rays.insert(0, (o, r));
             if o.material.luminosity > 0. {
                 // don't reflect from light emitting objects
                 return rays;

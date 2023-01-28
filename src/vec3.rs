@@ -62,6 +62,10 @@ impl Vec3 {
         f32::acos(self.dot(other) / (self.mag() * other.mag()))
     }
 
+    pub fn cos_angle(&self, other: &Vec3) -> f32 {
+        self.dot(other) / (self.mag() * other.mag())
+    }
+
     pub fn norm(&self) -> Vec3 {
         let mag = self.mag();
         if mag > 0. {
