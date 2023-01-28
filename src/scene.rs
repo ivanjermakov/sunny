@@ -21,18 +21,46 @@ impl Scene {
         for y in 0..h {
             for x in 0..w {
                 let cr = self.camera.camera_ray(Vec3::new(x as f32, y as f32, 0.));
-                let k = if let Some(reflection) = self.reflect(&cr) {
-                    ((reflection.1.dir.angle(&cr.dir) / PI) * 255.) as u8
+                let bounces = self
+                    .ray_trace(&cr, vec![])
+                    .into_iter()
+                    .rev()
+                    .collect::<Vec<_>>();
+                let color = if let Some((o, r)) = bounces.first() {
+                    if o.material.luminosity > 0. {
+                        let prev_r = bounces.get(1).map(|(_, r)| r).unwrap_or(&cr);
+                        let b = r.dir.angle(&prev_r.dir) / PI;
+                        o.material.color.brightness(b)
+                    } else {
+                        Color::BLACK
+                    }
                 } else {
-                    0
+                    Color::BLACK
                 };
-                ps.push(Color::mono(k));
+
+                ps.push(color);
             }
         }
         Image {
             resolution: self.camera.resolution,
             pixels: ps,
         }
+    }
+
+    pub fn ray_trace<'a>(
+        &'a self,
+        ray: &Ray,
+        mut rays: Vec<(&'a Object, Ray)>,
+    ) -> Vec<(&Object, Ray)> {
+        if let Some((o, r)) = self.reflect(ray) {
+            rays.push((o, r));
+            if o.material.luminosity > 0. {
+                // don't reflect from light emitting objects
+                return rays;
+            }
+            return self.ray_trace(&r, rays);
+        }
+        rays
     }
 
     pub fn reflect(&self, ray: &Ray) -> Option<(&Object, Ray)> {

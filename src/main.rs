@@ -19,21 +19,9 @@ pub mod shape;
 pub mod vec3;
 
 fn main() {
-    let light = Object {
-        shape: Box::new(Sphere {
-            center: Vec3::new(-2., 4., 4.),
-            radius: 1.,
-        }),
-        material: Material {
-            diffusion: 0.,
-            reflection: 1.,
-            color: Color::WHITE,
-            luminosity: 10.,
-        },
-    };
     let scene = Scene {
         camera: Camera {
-            resolution: Vec3::new(6. * 100., 4. * 100., 0.),
+            resolution: Vec3::new(6. * 1000., 4. * 1000., 0.),
             viewport: Plane {
                 center: Vec3::new(0., 0., 0.),
                 size: Vec3::new(6., 4., 0.),
@@ -41,6 +29,18 @@ fn main() {
             },
         },
         objects: vec![
+            Object {
+                shape: Box::new(Sphere {
+                    center: Vec3::new(-10., 4., 4.),
+                    radius: 5.,
+                }),
+                material: Material {
+                    diffusion: 0.,
+                    reflection: 1.,
+                    color: Color::WHITE,
+                    luminosity: 10.,
+                },
+            },
             Object {
                 shape: Box::new(Sphere {
                     center: Vec3::new(2., 0., 0.),
@@ -68,8 +68,7 @@ fn main() {
         ],
     };
 
-    let i = scene.render();
-    i.save_ppm("data/scene.ppm").ok();
+    scene.render().save_ppm("data/scene.ppm").ok();
 }
 
 #[cfg(test)]

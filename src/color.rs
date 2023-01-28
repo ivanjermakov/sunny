@@ -19,4 +19,12 @@ impl Color {
     pub const fn mono(k: u8) -> Color {
         Color { r: k, g: k, b: k }
     }
+
+    pub fn brightness(&self, b: f32) -> Color {
+        Color {
+            r: (self.r as f32 * b).clamp(0., 255.) as u8,
+            g: (self.g as f32 * b).clamp(0., 255.) as u8,
+            b: (self.b as f32 * b).clamp(0., 255.) as u8,
+        }
+    }
 }
