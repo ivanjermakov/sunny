@@ -52,11 +52,10 @@ impl Vec3 {
 
     pub fn norm(&self) -> Vec3 {
         let mag = self.mag();
-        if mag == 0. {
-            *self
+        if mag > 0. {
+            Vec3::new(self.x / mag, self.y / mag, self.z / mag)
         } else {
-            let i_mag = 1. / mag;
-            Vec3::new(self.x * i_mag, self.y * i_mag, self.z * i_mag)
+            *self
         }
     }
 
@@ -66,6 +65,11 @@ impl Vec3 {
 
     pub fn approx_eq(&self, other: &Vec3) -> bool {
         approx_eq(self.x, other.x) && approx_eq(self.y, other.y) && approx_eq(self.z, other.z)
+    }
+
+    /// [ref](https://math.stackexchange.com/a/13263/1028553)
+    pub fn reflect(&self, n: &Vec3) -> Vec3 {
+        *self - Vec3::diag(2. * self.dot(n)) * *n
     }
 }
 

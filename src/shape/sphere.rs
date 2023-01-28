@@ -18,24 +18,23 @@ impl Shape for Sphere {
             return None;
         }
         let d = hypot(l.mag(), t_ca);
-        dbg!(ray.dir, l, t_ca, d);
         if d > self.radius {
             return None;
         }
         let t_hc = hypot(self.radius, d);
         let p1 = ray.with_param(t_ca - t_hc);
 
-        // TODO: reflection
+        let normal = (p1 - self.center).norm();
+        let dir = (p1 - ray.start).reflect(&normal).norm();
 
-        Some(Ray {
-            start: p1,
-            dir: Vec3::zero(),
-        })
+        Some(Ray { start: p1, dir })
     }
 }
 
 #[cfg(test)]
 mod test {
+    use std::f32::consts::PI;
+
     use crate::ray::Ray;
     use crate::shape::sphere::Sphere;
     use crate::shape::Shape;
@@ -44,11 +43,11 @@ mod test {
     #[test]
     fn not_intersect_other_direction() {
         let s = Sphere {
-            center: Vec3::new(10., 0., 0.),
+            center: Vec3::new(2., 0., 1.),
             radius: 1.0,
         };
         let r = Ray {
-            start: Vec3::new(0., 0., 0.),
+            start: Vec3::new(0., 0., 1.),
             dir: Vec3::new(-1., 0., 0.),
         };
 
@@ -60,11 +59,11 @@ mod test {
     #[test]
     fn not_intersect_far() {
         let s = Sphere {
-            center: Vec3::new(10., 0., 0.),
+            center: Vec3::new(2., 0., 1.),
             radius: 1.0,
         };
         let r = Ray {
-            start: Vec3::new(0., 0., 0.),
+            start: Vec3::new(0., 0., 1.),
             dir: Vec3::new(1., 1., 0.).norm(),
         };
 
@@ -76,32 +75,80 @@ mod test {
     #[test]
     fn intersect_touch() {
         let s = Sphere {
-            center: Vec3::new(10., 0., 0.),
+            center: Vec3::new(2., 0., 1.),
             radius: 1.0,
         };
         let r = Ray {
-            start: Vec3::new(0., 1., 0.),
+            start: Vec3::new(0., 1., 1.),
             dir: Vec3::new(1., 0., 0.),
         };
 
         let ray = s.reflect(&r);
 
-        assert!(ray.unwrap().start.approx_eq(&Vec3::new(10., 1., 0.)))
+        assert!(ray.unwrap().start.approx_eq(&Vec3::new(2., 1., 1.)))
     }
 
     #[test]
     fn intersect_through() {
         let s = Sphere {
-            center: Vec3::new(10., 0., 0.),
+            center: Vec3::new(2., 0., 1.),
             radius: 1.0,
         };
         let r = Ray {
-            start: Vec3::new(0., 0., 0.),
+            start: Vec3::new(0., 0., 1.),
             dir: Vec3::new(1., 0., 0.),
         };
 
         let ray = s.reflect(&r);
 
-        assert!(ray.unwrap().start.approx_eq(&Vec3::new(9., 0., 0.)));
+        assert!(ray.unwrap().start.approx_eq(&Vec3::new(1., 0., 1.)));
+    }
+
+    #[test]
+    fn reflect_touch() {
+        let s = Sphere {
+            center: Vec3::new(2., 0., 1.),
+            radius: 1.0,
+        };
+        let r = Ray {
+            start: Vec3::new(0., 1., 1.),
+            dir: Vec3::new(1., 0., 0.),
+        };
+
+        let ray = s.reflect(&r).unwrap();
+
+        assert!(ray.dir.approx_eq(&Vec3::new(1., 0., 0.)))
+    }
+
+    #[test]
+    fn reflect_through() {
+        let s = Sphere {
+            center: Vec3::new(2., 0., 1.),
+            radius: 1.0,
+        };
+        let r = Ray {
+            start: Vec3::new(0., 0., 1.),
+            dir: Vec3::new(1., 0., 0.),
+        };
+
+        let ray = s.reflect(&r).unwrap();
+
+        assert!(ray.dir.approx_eq(&Vec3::new(-1., 0., 0.)));
+    }
+
+    #[test]
+    fn reflect_diag() {
+        let s = Sphere {
+            center: Vec3::new(2., 0., 1.),
+            radius: 1.0,
+        };
+        let r = Ray {
+            start: Vec3::new(0., f32::cos(PI / 4.), 1.),
+            dir: Vec3::new(1., 0., 0.),
+        };
+
+        let ray = s.reflect(&r).unwrap();
+
+        assert!(ray.dir.approx_eq(&Vec3::new(0., 1., 0.)));
     }
 }
