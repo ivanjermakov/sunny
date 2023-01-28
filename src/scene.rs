@@ -29,7 +29,7 @@ impl Scene {
                 let color = if let Some((o, r)) = bounces.first() {
                     if o.material.luminosity > 0. {
                         let prev_r = bounces.get(1).map(|(_, r)| r).unwrap_or(&cr);
-                        let b = r.dir.angle(&prev_r.dir) / PI;
+                        let b = (r.dir.angle(&prev_r.dir) / PI).powf(1. / 3.);
                         o.material.color.brightness(b)
                     } else {
                         Color::BLACK
@@ -52,6 +52,9 @@ impl Scene {
         ray: &Ray,
         mut rays: Vec<(&'a Object, Ray)>,
     ) -> Vec<(&Object, Ray)> {
+        if rays.len() > 1000 {
+            return vec![];
+        }
         if let Some((o, r)) = self.reflect(ray) {
             rays.push((o, r));
             if o.material.luminosity > 0. {

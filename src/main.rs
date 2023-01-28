@@ -19,20 +19,35 @@ pub mod shape;
 pub mod vec3;
 
 fn main() {
+    let asp_ratio = 16. / 9.;
+    let width = 2560.;
+    let vp_width = 6.;
     let scene = Scene {
         camera: Camera {
-            resolution: Vec3::new(6. * 1000., 4. * 1000., 0.),
+            resolution: Vec3::new(width, width / asp_ratio, 0.),
             viewport: Plane {
-                center: Vec3::new(0., 0., 0.),
-                size: Vec3::new(6., 4., 0.),
-                dir: Vec3::new(1., 0., 0.),
+                center: Vec3::new(0., 0., 3.),
+                size: Vec3::new(vp_width, vp_width / asp_ratio, 0.),
+                dir: Vec3::new(1., 0., -0.2).norm(),
             },
         },
         objects: vec![
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(-10., 4., 4.),
-                    radius: 5.,
+                    center: Vec3::new(0., 0., 110.),
+                    radius: 100.,
+                }),
+                material: Material {
+                    diffusion: 0.,
+                    reflection: 1.,
+                    color: Color::BLUE,
+                    luminosity: 10.,
+                },
+            },
+            Object {
+                shape: Box::new(Sphere {
+                    center: Vec3::new(0., 0., -110.),
+                    radius: 110.,
                 }),
                 material: Material {
                     diffusion: 0.,
@@ -43,7 +58,7 @@ fn main() {
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(2., 0., 0.),
+                    center: Vec3::new(8., 0., 1.),
                     radius: 1.,
                 }),
                 material: Material {
@@ -55,8 +70,20 @@ fn main() {
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(1., 0.5, -0.5),
+                    center: Vec3::new(6., 1., 0.5),
                     radius: 0.5,
+                }),
+                material: Material {
+                    diffusion: 0.,
+                    reflection: 1.,
+                    color: Color::WHITE,
+                    luminosity: 0.,
+                },
+            },
+            Object {
+                shape: Box::new(Sphere {
+                    center: Vec3::new(6., -1., 0.8),
+                    radius: 0.8,
                 }),
                 material: Material {
                     diffusion: 0.,
