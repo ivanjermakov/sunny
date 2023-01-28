@@ -1,9 +1,11 @@
-use crate::ray::Ray;
 use std::fmt::Debug;
 
-pub mod sphere;
+use crate::ray::Ray;
+
 pub mod plane;
+pub mod sphere;
 
 pub trait Shape: Debug {
-    fn intersect(&self, ray: &Ray) -> bool;
+    /// Reflect a ray of the shape's surface
+    fn reflect(&self, ray: &Ray) -> Option<Ray>;
 }

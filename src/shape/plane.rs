@@ -6,10 +6,11 @@ use crate::vec3::Vec3;
 pub struct Plane {
     pub center: Vec3,
     pub size: Vec3,
+    pub dir: Vec3,
 }
 
 impl Shape for Plane {
-    fn intersect(&self, ray: &Ray) -> bool {
+    fn reflect(&self, _ray: &Ray) -> Option<Ray> {
         todo!()
     }
 }

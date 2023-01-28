@@ -5,6 +5,7 @@ pub mod ray;
 mod scene;
 mod shape;
 mod vec3;
+mod math;
 
 fn main() {
     println!("Hello, world!");
@@ -15,7 +16,6 @@ mod test {
     use crate::camera::Camera;
     use crate::light::Light;
     use crate::object::Object;
-    use crate::ray::Ray;
     use crate::scene::Scene;
     use crate::shape::plane::Plane;
     use crate::shape::sphere::Sphere;
@@ -30,17 +30,18 @@ mod test {
             }),
         };
         let light = Light {
-            shape: Box::new(Plane {
-                center: Vec3::new(2., 0., 0.),
-                size: Vec3::new(2., 2., 0.),
+            shape: Box::new(Sphere {
+                center: Vec3::new(0., 2., 2.),
+                radius: 1.,
             }),
             intensity: 10.,
         };
         let scene = Scene {
             camera: Camera {
                 resolution: Vec3::new(600., 400., 0.),
-                position: Ray {
-                    start: Vec3::new(0., 0., 0.),
+                viewport: Plane {
+                    center: Vec3::new(0., 0., 0.),
+                    size: Vec3::new(3., 2., 0.),
                     dir: Vec3::new(1., 0., 0.),
                 },
             },
