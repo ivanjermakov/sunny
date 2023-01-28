@@ -22,6 +22,18 @@ impl Vec3 {
         Vec3::new(v, v, v)
     }
 
+    pub fn with_x(&self, x: f32) -> Vec3 {
+        Vec3::new(x, self.y, self.z)
+    }
+
+    pub fn with_y(&self, y: f32) -> Vec3 {
+        Vec3::new(self.x, y, self.z)
+    }
+
+    pub fn with_z(&self, z: f32) -> Vec3 {
+        Vec3::new(self.x, self.y, z)
+    }
+
     pub fn abs(&self) -> Vec3 {
         Vec3::new(self.x.abs(), self.y.abs(), self.z.abs())
     }
@@ -63,6 +75,48 @@ impl Vec3 {
         (*self - *other).mag()
     }
 
+    /// Matrix:
+    /// |   1,   0,   0|   | x |
+    /// |   0, cos,-sin| x | y |
+    /// |   0, sin, cos|   | z |
+    pub fn rotate_x(&self, angle: f32) -> Vec3 {
+        let cos = angle.cos();
+        let sin = angle.sin();
+        Vec3 {
+            x: 1. * self.x + 0. * self.y + 0. * self.z,
+            y: 0. * self.x + cos * self.y + -sin * self.z,
+            z: 0. * self.x + sin * self.y + cos * self.z,
+        }
+    }
+
+    /// Matrix:
+    /// | cos,   0, sin|   | x |
+    /// |   0,   1,   0| x | y |
+    /// |-sin,   0, cos|   | z |
+    pub fn rotate_y(&self, angle: f32) -> Vec3 {
+        let cos = angle.cos();
+        let sin = angle.sin();
+        Vec3 {
+            x: cos * self.x + 0. * self.y + sin * self.z,
+            y: 0. * self.x + 1. * self.y + 0. * self.z,
+            z: -sin * self.x + 0. * self.y + cos * self.z,
+        }
+    }
+
+    /// Matrix:
+    /// | cos,-sin,   0|   | x |
+    /// | sin, cos,   0| x | y |
+    /// |   0,   0,   1|   | z |
+    pub fn rotate_z(&self, angle: f32) -> Vec3 {
+        let cos = angle.cos();
+        let sin = angle.sin();
+        Vec3 {
+            x: cos * self.x + -sin * self.y + 0. * self.z,
+            y: sin * self.x + cos * self.y + 0. * self.z,
+            z: 0. * self.x + 0. * self.y + 1. * self.z,
+        }
+    }
+
     pub fn approx_eq(&self, other: &Vec3) -> bool {
         approx_eq(self.x, other.x) && approx_eq(self.y, other.y) && approx_eq(self.z, other.z)
     }
@@ -102,5 +156,13 @@ impl ops::Div for Vec3 {
 
     fn div(self, rhs: Self) -> Self::Output {
         Vec3::new(self.x / rhs.x, self.y / rhs.y, self.z / rhs.z)
+    }
+}
+
+impl ops::Neg for Vec3 {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Vec3::new(-self.x, -self.y, -self.z)
     }
 }
