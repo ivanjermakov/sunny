@@ -1,11 +1,13 @@
 mod camera;
+mod image;
 mod light;
+mod math;
 mod object;
 pub mod ray;
 mod scene;
 mod shape;
 mod vec3;
-mod math;
+mod color;
 
 fn main() {
     println!("Hello, world!");
