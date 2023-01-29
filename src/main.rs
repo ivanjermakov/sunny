@@ -1,5 +1,5 @@
 use crate::camera::Camera;
-use crate::color::Color;
+use crate::color::RgbColor;
 use crate::material::Material;
 use crate::object::Object;
 use crate::scene::Scene;
@@ -19,8 +19,8 @@ pub mod shape;
 pub mod vec3;
 
 fn main() {
-    let asp_ratio = 16. / 9.;
-    let width = 2560.;
+    let asp_ratio = 16. / 16.;
+    let width = 1080.;
     let vp_width = 6.;
     let scene = Scene {
         camera: Camera {
@@ -34,61 +34,56 @@ fn main() {
         objects: vec![
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(0., 0., 110.),
+                    center: Vec3::new(0., 0., 300.),
+                    radius: 200.,
+                }),
+                material: Material {
+                    diffusion: 0.,
+                    color: RgbColor::WHITE,
+                    luminosity: 1.,
+                },
+            },
+            Object {
+                shape: Box::new(Sphere {
+                    center: Vec3::new(4., 0., -100.),
                     radius: 100.,
                 }),
                 material: Material {
-                    diffusion: 0.,
-                    reflection: 1.,
-                    color: Color::WHITE,
-                    luminosity: 10.,
+                    diffusion: 1.,
+                    color: RgbColor::mono(127),
+                    luminosity: 0.,
                 },
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(0., 0., -110.),
-                    radius: 110.,
-                }),
-                material: Material {
-                    diffusion: 0.,
-                    reflection: 1.,
-                    color: Color::WHITE,
-                    luminosity: 10.,
-                },
-            },
-            Object {
-                shape: Box::new(Sphere {
-                    center: Vec3::new(8., 0., 1.),
+                    center: Vec3::new(4., 0., 1.),
                     radius: 1.,
                 }),
                 material: Material {
-                    diffusion: 0.,
-                    reflection: 1.,
-                    color: Color::WHITE,
+                    diffusion: 1.,
+                    color: RgbColor::GREEN,
                     luminosity: 0.,
                 },
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(6., 1., 0.5),
+                    center: Vec3::new(2.5, 1., 0.5),
                     radius: 0.5,
                 }),
                 material: Material {
-                    diffusion: 0.,
-                    reflection: 1.,
-                    color: Color::WHITE,
+                    diffusion: 1.,
+                    color: RgbColor::BLUE,
                     luminosity: 0.,
                 },
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(6., -1., 0.8),
+                    center: Vec3::new(2.5, -1., 0.8),
                     radius: 0.8,
                 }),
                 material: Material {
-                    diffusion: 0.,
-                    reflection: 1.,
-                    color: Color::WHITE,
+                    diffusion: 1.,
+                    color: RgbColor::RED,
                     luminosity: 0.,
                 },
             },

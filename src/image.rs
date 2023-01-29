@@ -1,12 +1,12 @@
 use std::fs::write;
 
-use crate::color::Color;
+use crate::color::RgbColor;
 use crate::vec3::Vec3;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Default)]
 pub struct Image {
     pub resolution: Vec3,
-    pub pixels: Vec<Color>,
+    pub pixels: Vec<RgbColor>,
 }
 
 impl Image {
@@ -18,7 +18,7 @@ impl Image {
             d = self
                 .pixels
                 .iter()
-                .map(|Color { r, g, b }| format!("{r} {g} {b} "))
+                .map(|RgbColor { r, g, b }| format!("{r} {g} {b} "))
                 .collect::<Vec<_>>()
                 .join("\n")
         );
@@ -28,7 +28,7 @@ impl Image {
 
 #[cfg(test)]
 mod test {
-    use crate::color::Color;
+    use crate::color::RgbColor;
     use crate::image::Image;
     use crate::vec3::Vec3;
 
@@ -39,7 +39,7 @@ mod test {
         let mut ps = vec![];
         for x in 0..w as i32 {
             for y in 0..r.y as i32 {
-                ps.push(Color {
+                ps.push(RgbColor {
                     r: if (x + y) % 2 == 0 { 255 } else { 0 },
                     g: 0,
                     b: 0,

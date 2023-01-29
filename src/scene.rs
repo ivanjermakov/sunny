@@ -1,7 +1,7 @@
 use rayon::prelude::*;
 
 use crate::camera::Camera;
-use crate::color::Color;
+use crate::color::RgbColor;
 use crate::image::Image;
 use crate::object::Object;
 use crate::ray::Ray;
@@ -20,19 +20,10 @@ impl Scene {
         let ps = (0..w * h)
             .into_par_iter()
             .map(|i| {
-                let y = i / w as i32;
-                let x = (y / w) as i32 + i % w;
+                let y = i / w;
+                let x = (y / w) + (i % w);
                 let cr = self.camera.camera_ray(Vec3::new(x as f32, y as f32, 0.));
-                let bounces = self.ray_trace(&cr, vec![]);
-                match bounces.first() {
-                    Some((o, r)) if o.material.luminosity > 0. => {
-                        let prev_r = bounces.get(1).map(|(_, r)| r).unwrap_or(&cr);
-                        let cos = r.dir.cos_angle(&prev_r.dir);
-                        let b = (1. - (cos + 1.) / 2.).cbrt();
-                        o.material.color.brightness(b)
-                    }
-                    _ => Color::BLACK,
-                }
+                self.ray_trace(&cr, 0).unwrap_or(RgbColor::BLACK)
             })
             .collect();
         Image {
@@ -41,23 +32,47 @@ impl Scene {
         }
     }
 
-    pub fn ray_trace<'a>(
-        &'a self,
-        ray: &Ray,
-        mut rays: Vec<(&'a Object, Ray)>,
-    ) -> Vec<(&Object, Ray)> {
-        if rays.len() > 8 {
-            return vec![];
+    pub fn ray_trace(&self, ray: &Ray, depth: usize) -> Option<RgbColor> {
+        let max_depth = 2;
+        let shadow_samples = 100;
+        if depth > max_depth {
+            return None;
         }
         if let Some((o, r)) = self.reflect(ray) {
-            rays.insert(0, (o, r));
-            if o.material.luminosity > 0. {
-                // don't reflect from light emitting objects
-                return rays;
-            }
-            return self.ray_trace(&r, rays);
+            return if o.material.luminosity > 0. {
+                Some(o.material.color)
+            } else if o.material.diffusion > 0. {
+                let color = self
+                    .objects
+                    .iter()
+                    .filter(|o| o.material.luminosity > 0.)
+                    .map(|l| {
+                        let hits = (0..shadow_samples)
+                            .filter_map(|_| {
+                                let light_p = o.shape.random_point_inside();
+                                let sh_normal = (r.start - light_p).norm();
+                                let sh_ray = Ray {
+                                    start: r.start,
+                                    dir: sh_normal,
+                                };
+                                self.reflect(&sh_ray)
+                                    .filter(|(o, _)| o.material.luminosity > 0.)
+                                    .map(|_| ())
+                            })
+                            .count();
+                        o.material.color.brighten(
+                            (hits as f32 * l.material.luminosity / shadow_samples as f32).cbrt(),
+                        )
+                    })
+                    .reduce(|a, b| a + b)
+                    .unwrap_or(RgbColor::BLACK);
+                Some(color)
+            } else {
+                self.ray_trace(&r, depth + 1)
+            };
+        } else {
+            None
         }
-        rays
     }
 
     pub fn reflect(&self, ray: &Ray) -> Option<(&Object, Ray)> {

@@ -1,3 +1,7 @@
+use std::f32::consts::PI;
+
+use rand::random;
+
 use crate::math::sq_diff_root;
 use crate::ray::Ray;
 use crate::shape::Shape;
@@ -28,6 +32,14 @@ impl Shape for Sphere {
         let dir = (p1 - ray.start).reflect(&normal).norm();
 
         Some(Ray { start: p1, dir })
+    }
+
+    fn random_point_inside(&self) -> Vec3 {
+        let th = random::<f32>() * 2. * PI;
+        let fi = random::<f32>() * 2. * PI;
+        let r = random::<f32>().sqrt() * self.radius;
+
+        self.center + Vec3::new(r, 0., 0.).rotate_z(th).rotate_y(fi)
     }
 }
 
@@ -150,5 +162,19 @@ mod test {
         let ray = s.reflect(&r).unwrap();
 
         assert!(ray.dir.approx_eq(&Vec3::new(0., 1., 0.)));
+    }
+
+    #[test]
+    fn random_point() {
+        let s = Sphere {
+            center: Vec3::new(0., 0., 0.),
+            radius: 100.0,
+        };
+        for _ in 0..1000 {
+            let p = s.random_point_inside();
+            println!("{p:?}");
+            println!("{}", s.radius - p.mag());
+            assert!(p.mag() <= s.radius)
+        }
     }
 }
