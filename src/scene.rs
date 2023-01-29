@@ -24,17 +24,14 @@ impl Scene {
                 let x = (y / w) as i32 + i % w;
                 let cr = self.camera.camera_ray(Vec3::new(x as f32, y as f32, 0.));
                 let bounces = self.ray_trace(&cr, vec![]);
-                if let Some((o, r)) = bounces.first() {
-                    if o.material.luminosity > 0. {
+                match bounces.first() {
+                    Some((o, r)) if o.material.luminosity > 0. => {
                         let prev_r = bounces.get(1).map(|(_, r)| r).unwrap_or(&cr);
                         let cos = r.dir.cos_angle(&prev_r.dir);
                         let b = (1. - (cos + 1.) / 2.).cbrt();
                         o.material.color.brightness(b)
-                    } else {
-                        Color::BLACK
                     }
-                } else {
-                    Color::BLACK
+                    _ => Color::BLACK,
                 }
             })
             .collect();
