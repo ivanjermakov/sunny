@@ -1,5 +1,5 @@
-use std::fmt::Debug;
 use crate::material::Material;
+use std::fmt::Debug;
 
 use crate::shape::Shape;
 

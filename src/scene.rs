@@ -1,3 +1,5 @@
+use rayon::prelude::*;
+
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::image::Image;
@@ -15,12 +17,14 @@ impl Scene {
     pub fn render(&self) -> Image {
         let w = self.camera.resolution.x as i32;
         let h = self.camera.resolution.y as i32;
-        let mut ps = vec![];
-        for y in 0..h {
-            for x in 0..w {
+        let ps = (0..w * h)
+            .into_par_iter()
+            .map(|i| {
+                let y = i / w as i32;
+                let x = (y / w) as i32 + i % w;
                 let cr = self.camera.camera_ray(Vec3::new(x as f32, y as f32, 0.));
                 let bounces = self.ray_trace(&cr, vec![]);
-                let color = if let Some((o, r)) = bounces.first() {
+                if let Some((o, r)) = bounces.first() {
                     if o.material.luminosity > 0. {
                         let prev_r = bounces.get(1).map(|(_, r)| r).unwrap_or(&cr);
                         let cos = r.dir.cos_angle(&prev_r.dir);
@@ -31,11 +35,9 @@ impl Scene {
                     }
                 } else {
                     Color::BLACK
-                };
-
-                ps.push(color);
-            }
-        }
+                }
+            })
+            .collect();
         Image {
             resolution: self.camera.resolution,
             pixels: ps,

@@ -20,7 +20,7 @@ pub mod vec3;
 
 fn main() {
     let asp_ratio = 16. / 9.;
-    let width = 2560. * 2.;
+    let width = 2560.;
     let vp_width = 6.;
     let scene = Scene {
         camera: Camera {
