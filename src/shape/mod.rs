@@ -11,6 +11,4 @@ pub trait Shape: Debug + Send + Sync {
     fn reflect(&self, ray: &Ray) -> Option<(Ray, Vec3)>;
 
     fn center(&self) -> Vec3;
-
-    fn even_points(&self, count: usize, normal: Vec3) -> Vec<Vec3>;
 }

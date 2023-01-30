@@ -1,7 +1,3 @@
-use std::f32::consts::PI;
-
-use rand::random;
-
 use crate::math::sq_diff_root;
 use crate::ray::Ray;
 use crate::shape::Shape;
@@ -36,22 +32,6 @@ impl Shape for Sphere {
 
     fn center(&self) -> Vec3 {
         self.center
-    }
-
-    fn even_points(&self, count: usize, normal: Vec3) -> Vec<Vec3> {
-        let mut ps = vec![];
-        for i in 0..count {
-            let r_th = random::<f32>() * 2. - 1.;
-            let d_th = ((i as f32 + r_th) / count as f32) * 2. * PI;
-            for j in 0..count {
-                let r_r = random::<f32>() * 2. - 1.;
-                let d_r = ((j as f32 + r_r) / count as f32).sqrt() * self.radius;
-                let r = (normal * Vec3::diag(d_r)).rotate_x(d_th);
-                let p = self.center + r;
-                ps.push(p)
-            }
-        }
-        ps
     }
 }
 

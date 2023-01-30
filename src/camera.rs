@@ -12,6 +12,7 @@ pub struct Camera {
 }
 
 impl Camera {
+    // TODO: incorrect center
     /// Create a ray coming from the center of a specified resolution pixel at viewport direction
     pub fn camera_ray(&self, px: Vec3) -> Ray {
         let vp_tr = (((px + Vec3::new(0.5, 0.5, 0.)) * self.viewport.size) / self.resolution)
@@ -28,5 +29,11 @@ impl Camera {
             start: self.viewport.center + fp,
             dir,
         }
+    }
+
+    /// Camera field of view in radians
+    pub fn fov(&self) -> f32 {
+        let diag = self.viewport.size.x.hypot(self.viewport.size.y);
+        2. * (diag / (2. * self.focal_len)).atan()
     }
 }
