@@ -6,10 +6,7 @@ use crate::image::Image;
 use crate::object::Object;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
-
-const PIXEL_PASS_COUNT: usize = 400;
-const REFLECTION_DEPTH: usize = 8;
-const AMBIENT_COLOR: Color = Color::rgb(0.1, 0.3, 0.5);
+use crate::{AMBIENT_COLOR, PIXEL_PASS_COUNT, REFLECTION_DEPTH};
 
 #[derive(Debug)]
 pub struct Scene {

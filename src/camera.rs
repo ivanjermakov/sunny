@@ -8,7 +8,7 @@ use crate::vec3::Vec3;
 pub struct Camera {
     pub resolution: Vec3,
     pub viewport: Plane,
-    // TODO: FOV
+    pub focal_len: f32,
 }
 
 impl Camera {
@@ -21,9 +21,12 @@ impl Camera {
         let top = (Vec3::diag(self.viewport.size.y / 2.) * self.viewport.dir).rotate_y(-PI / 2.);
         let left = (Vec3::diag(self.viewport.size.x / 2.) * self.viewport.dir).rotate_z(PI / 2.);
         let top_left = top + left;
+        let vp_p = top_left + vp_tr;
+        let fp = self.viewport.dir.mul_n(-self.focal_len);
+        let dir = (vp_p - fp).norm();
         Ray {
-            start: self.viewport.center + (top_left + vp_tr),
-            dir: self.viewport.dir,
+            start: self.viewport.center + fp,
+            dir,
         }
     }
 }
