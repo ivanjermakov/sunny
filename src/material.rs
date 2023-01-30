@@ -9,9 +9,9 @@ pub struct Material {
     /// When 1, rays reflected evenly in every possible direction
     pub roughness: f32,
 
-    /// Determines how much much light gets reflected from the surface
-    /// When 0, all reflections are "consumed" and surface color is reflected
-    /// When 1, light is reflected as-is, surface color is ignored
+    /// Determines the ratio between surface color and reflection color
+    /// When 0, reflects light color
+    /// When 1, reflects surface color
     pub specularity: f32,
 
     pub color: Color,

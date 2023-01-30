@@ -21,17 +21,17 @@ pub mod shape;
 pub mod vec3;
 
 const ASP_RATIO: f32 = 16. / 16.;
-const WIDTH: f32 = 1080. * 1.;
+const WIDTH: f32 = 1080. * 2.;
 const VP_WIDTH: f32 = 1.;
 
-const PIXEL_PASS_COUNT: usize = 500;
-const REFLECTION_DEPTH: usize = 2;
+const PIXEL_PASS_COUNT: usize = 100;
+const REFLECTION_DEPTH: usize = 3;
 // const AMBIENT_COLOR: Color = Color::rgb(0.1, 0.1, 0.4);
 const AMBIENT_COLOR: Color = Color::mono(0.2);
 
 fn main() {
-    let c_pos = Vec3::new(-12., -5., 5.);
-    let c_dir = (Vec3::new(0., -5., 5.) - c_pos).norm();
+    let c_pos = Vec3::new(-3., -1., 1.);
+    let c_dir = (Vec3::new(0., -1., 1.) - c_pos).norm();
     let camera = Camera {
         resolution: Vec3::new(WIDTH, WIDTH / ASP_RATIO, 0.),
         viewport: Plane {
@@ -50,7 +50,7 @@ fn main() {
         material: Material {
             roughness: 1.,
             specularity: 1.,
-            color: Color::WHITE,
+            color: Color::YELLOW,
             luminosity: 0.,
         },
     };
@@ -64,7 +64,7 @@ fn main() {
             roughness: 0.,
             specularity: 0.,
             color: Color::WHITE,
-            luminosity: 1.0,
+            luminosity: 10.0,
         },
     };
     objects.push(light);
@@ -77,19 +77,19 @@ fn main() {
             roughness: 0.,
             specularity: 0.,
             color: Color::WHITE,
-            luminosity: 1.0,
+            luminosity: 0.5,
         },
     };
     objects.push(light_s);
     let mut balls = vec![];
-    for i in 0..=10 {
-        let spec = i as f32 / 10.;
-        for j in 0..=10 {
-            let rough = j as f32 / 10.;
+    for i in 0..=2 {
+        let spec = i as f32 / 2.;
+        for j in 0..=2 {
+            let rough = j as f32 / 2.;
             let o = Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(-0.5, -j as f32, i as f32),
-                    radius: 0.5,
+                    center: Vec3::new(-0.4, -j as f32, i as f32),
+                    radius: 0.4,
                 }),
                 material: Material {
                     roughness: rough,

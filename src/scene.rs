@@ -50,25 +50,23 @@ impl Scene {
         if depth >= REFLECTION_DEPTH {
             return Some(Color::BLACK);
         }
-        if let Some((ref_o, ref_n, ref_r)) = self.reflect(ray) {
-            if ref_o.material.luminosity > 0. {
+        if let Some((Object { material: m, .. }, ref_n, ref_r)) = self.reflect(ray) {
+            if m.luminosity > 0. {
                 let angle = (-ray.dir).cos_angle(&ref_n) * 0.5 + 0.5;
-                return Some(
-                    ref_o
-                        .material
-                        .color
-                        .with_lightness(ref_o.material.luminosity * angle),
-                );
+                return Some(m.color.with_lightness(m.luminosity * angle));
             };
-            let base = (ref_r.dir.mul_n(1. - ref_o.material.roughness)
-                + ref_n.mul_n(ref_o.material.roughness))
-            .norm();
+            let base = (ref_r.dir.mul_n(1. - m.roughness) + ref_n.mul_n(m.roughness)).norm();
             let next = Ray {
                 start: ref_r.start,
-                dir: (base + (Vec3::rand()).mul_n(ref_o.material.roughness)).norm(),
+                dir: (base + (Vec3::rand()).mul_n(m.roughness)).norm(),
             };
-            // TODO: reduce effect of reflected rays
-            self.ray_trace(&next, depth + 1)
+            // TODO: fresnel reflection
+            self.ray_trace(&next, depth + 1).map(|rc| {
+                m.color
+                    .mul(1. - m.specularity)
+                    .with_lightness(rc.lightness())
+                    + rc.mul(m.specularity)
+            })
         } else {
             let angle = (ray.dir).cos_angle(&self.camera.viewport.dir) * 0.5 + 0.5;
             Some(AMBIENT_COLOR.with_lightness(1. - angle))
@@ -83,7 +81,7 @@ impl Scene {
                 let len = ray.start.dist(&reflection.start);
                 if len < c_len {
                     c_len = len;
-                    closest = Some((o, norm, reflection))
+                    closest = Some((o, norm, reflection));
                 }
             }
         }

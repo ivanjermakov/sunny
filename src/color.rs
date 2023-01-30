@@ -14,6 +14,9 @@ impl Color {
     pub const RED: Color = Color::rgb(1., 0., 0.);
     pub const GREEN: Color = Color::rgb(0., 1., 0.);
     pub const BLUE: Color = Color::rgb(0., 0., 1.);
+    pub const CYAN: Color = Color::rgb(0., 1., 1.);
+    pub const MAGENTA: Color = Color::rgb(1., 0., 1.);
+    pub const YELLOW: Color = Color::rgb(1., 1., 0.);
 
     pub const fn rgb(r: f32, g: f32, b: f32) -> Color {
         Color { r, g, b }
@@ -89,15 +92,23 @@ impl Color {
             (self.max() - l) / min_by(l, 1. - l, |a, b| a.partial_cmp(b).unwrap())
         }
     }
+
+    pub fn mul(self, n: f32) -> Color {
+        Color {
+            r: (self.r * n).div(2.),
+            g: (self.g * n).div(2.),
+            b: (self.b * n).div(2.),
+        }
+    }
 }
 
 impl Add for Color {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
         Color {
-            r: (self.r + rhs.r).div(2.).clamp(0., 1.),
-            g: (self.g + rhs.g).div(2.).clamp(0., 1.),
-            b: (self.b + rhs.b).div(2.).clamp(0., 1.),
+            r: (self.r + rhs.r).div(2.),
+            g: (self.g + rhs.g).div(2.),
+            b: (self.b + rhs.b).div(2.),
         }
     }
 }
