@@ -1,5 +1,4 @@
 /target
 .idea
 perf*
-data/scene.ppm
-data/test.ppm
+data/*.ppm

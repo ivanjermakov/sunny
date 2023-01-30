@@ -24,7 +24,7 @@ const ASP_RATIO: f32 = 16. / 16.;
 const WIDTH: f32 = 1080. * 2.;
 const VP_WIDTH: f32 = 1.;
 
-const PIXEL_PASS_COUNT: usize = 100;
+const PIXEL_PASS_COUNT: usize = 50;
 const REFLECTION_DEPTH: usize = 3;
 // const AMBIENT_COLOR: Color = Color::rgb(0.1, 0.1, 0.4);
 const AMBIENT_COLOR: Color = Color::mono(0.2);

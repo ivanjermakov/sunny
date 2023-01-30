@@ -3,6 +3,7 @@ use std::fs::write;
 use crate::color::Color;
 use crate::vec3::Vec3;
 
+// TODO: add metadata (reflection_depth, pass_count)
 #[derive(Debug, Clone, PartialEq, PartialOrd, Default)]
 pub struct Image {
     pub resolution: Vec3,

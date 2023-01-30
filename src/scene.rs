@@ -55,12 +55,12 @@ impl Scene {
                 let angle = (-ray.dir).cos_angle(&ref_n) * 0.5 + 0.5;
                 return Some(m.color.with_lightness(m.luminosity * angle));
             };
-            let base = (ref_r.dir.mul_n(1. - m.roughness) + ref_n.mul_n(m.roughness)).norm();
             let next = Ray {
                 start: ref_r.start,
-                dir: (base + (Vec3::rand()).mul_n(m.roughness)).norm(),
+                dir: (ref_r.dir + Vec3::rand().mul_n(m.roughness)).norm(),
             };
             // TODO: fresnel reflection
+            // TODO: optimize inside-reflected rays
             self.ray_trace(&next, depth + 1).map(|rc| {
                 m.color
                     .mul(1. - m.specularity)
