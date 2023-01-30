@@ -60,10 +60,14 @@ impl Scene {
                         .with_lightness(ref_o.material.luminosity * angle),
                 );
             };
+            let base = (ref_r.dir.mul_n(1. - ref_o.material.roughness)
+                + ref_n.mul_n(ref_o.material.roughness))
+            .norm();
             let next = Ray {
                 start: ref_r.start,
-                dir: (ref_r.dir + (Vec3::rand()).mul_n(1.0).mul_n(ref_o.material.roughness)).norm(),
+                dir: (base + (Vec3::rand()).mul_n(ref_o.material.roughness)).norm(),
             };
+            // TODO: reduce effect of reflected rays
             self.ray_trace(&next, depth + 1)
         } else {
             let angle = (ray.dir).cos_angle(&self.camera.viewport.dir) * 0.5 + 0.5;
