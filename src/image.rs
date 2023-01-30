@@ -10,24 +10,23 @@ pub struct Image {
 }
 
 impl Image {
-    // TODO: optimize: use byte format
     pub fn save_ppm(&self, path: &str) -> std::io::Result<()> {
-        let content = format!(
-            "P3\n{w} {h}\n255\n{d}",
+        let mut content: Vec<u8> = vec![];
+        let header = format!(
+            "P6\n{w} {h}\n255\n",
             w = self.resolution.x,
-            h = self.resolution.y,
-            d = self
-                .pixels
-                .iter()
-                .map(|Color { r, g, b }| format!(
-                    "{} {} {} ",
-                    (r * 255.) as u8,
-                    (g * 255.) as u8,
-                    (b * 255.) as u8
-                ))
-                .collect::<Vec<_>>()
-                .join("\n")
-        );
+            h = self.resolution.y
+        )
+        .as_bytes()
+        .to_vec();
+        content.extend(header);
+        for px in &self.pixels {
+            content.extend([
+                (px.r * 255.) as u8,
+                (px.g * 255.) as u8,
+                (px.b * 255.) as u8,
+            ])
+        }
         write(path, content)
     }
 }
