@@ -15,7 +15,7 @@ pub struct Sphere {
 
 impl Shape for Sphere {
     /// [guide](https://www.scratchapixel.com/lessons/3d-basic-rendering/minimal-ray-tracer-rendering-simple-shapes/ray-sphere-intersection.html)
-    fn reflect(&self, ray: &Ray) -> Option<Ray> {
+    fn reflect(&self, ray: &Ray) -> Option<(Ray, Vec3)> {
         let l = self.center - ray.start;
         let t_ca = l.dot(&ray.dir);
         if t_ca < 0. {
@@ -31,15 +31,27 @@ impl Shape for Sphere {
         let normal = (p1 - self.center).norm();
         let dir = (p1 - ray.start).reflect(&normal).norm();
 
-        Some(Ray { start: p1, dir })
+        Some((Ray { start: p1, dir }, normal))
     }
 
-    fn random_point_inside(&self) -> Vec3 {
-        let th = random::<f32>() * 2. * PI;
-        let fi = random::<f32>() * 2. * PI;
-        let r = random::<f32>().sqrt() * self.radius;
+    fn center(&self) -> Vec3 {
+        self.center
+    }
 
-        self.center + Vec3::new(r, 0., 0.).rotate_z(th).rotate_y(fi)
+    fn even_points(&self, count: usize, normal: Vec3) -> Vec<Vec3> {
+        let mut ps = vec![];
+        for i in 0..count {
+            let r_th = random::<f32>() * 2. - 1.;
+            let d_th = ((i as f32 + r_th) / count as f32) * 2. * PI;
+            for j in 0..count {
+                let r_r = random::<f32>() * 2. - 1.;
+                let d_r = ((j as f32 + r_r) / count as f32).sqrt() * self.radius;
+                let r = (normal * Vec3::diag(d_r)).rotate_x(d_th);
+                let p = self.center + r;
+                ps.push(p)
+            }
+        }
+        ps
     }
 }
 
@@ -97,7 +109,7 @@ mod test {
 
         let ray = s.reflect(&r);
 
-        assert!(ray.unwrap().start.approx_eq(&Vec3::new(2., 1., 1.)))
+        assert!(ray.unwrap().0.start.approx_eq(&Vec3::new(2., 1., 1.)))
     }
 
     #[test]
@@ -113,7 +125,7 @@ mod test {
 
         let ray = s.reflect(&r);
 
-        assert!(ray.unwrap().start.approx_eq(&Vec3::new(1., 0., 1.)));
+        assert!(ray.unwrap().0.start.approx_eq(&Vec3::new(1., 0., 1.)));
     }
 
     #[test]
@@ -129,7 +141,7 @@ mod test {
 
         let ray = s.reflect(&r).unwrap();
 
-        assert!(ray.dir.approx_eq(&Vec3::new(1., 0., 0.)))
+        assert!(ray.0.dir.approx_eq(&Vec3::new(1., 0., 0.)))
     }
 
     #[test]
@@ -145,7 +157,7 @@ mod test {
 
         let ray = s.reflect(&r).unwrap();
 
-        assert!(ray.dir.approx_eq(&Vec3::new(-1., 0., 0.)));
+        assert!(ray.0.dir.approx_eq(&Vec3::new(-1., 0., 0.)));
     }
 
     #[test]
@@ -161,20 +173,6 @@ mod test {
 
         let ray = s.reflect(&r).unwrap();
 
-        assert!(ray.dir.approx_eq(&Vec3::new(0., 1., 0.)));
-    }
-
-    #[test]
-    fn random_point() {
-        let s = Sphere {
-            center: Vec3::new(0., 0., 0.),
-            radius: 100.0,
-        };
-        for _ in 0..1000 {
-            let p = s.random_point_inside();
-            println!("{p:?}");
-            println!("{}", s.radius - p.mag());
-            assert!(p.mag() <= s.radius)
-        }
+        assert!(ray.0.dir.approx_eq(&Vec3::new(0., 1., 0.)));
     }
 }

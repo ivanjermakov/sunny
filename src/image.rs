@@ -1,15 +1,16 @@
 use std::fs::write;
 
-use crate::color::RgbColor;
+use crate::color::Color;
 use crate::vec3::Vec3;
 
 #[derive(Debug, Clone, PartialEq, PartialOrd, Default)]
 pub struct Image {
     pub resolution: Vec3,
-    pub pixels: Vec<RgbColor>,
+    pub pixels: Vec<Color>,
 }
 
 impl Image {
+    // TODO: optimize: use byte format
     pub fn save_ppm(&self, path: &str) -> std::io::Result<()> {
         let content = format!(
             "P3\n{w} {h}\n255\n{d}",
@@ -18,7 +19,12 @@ impl Image {
             d = self
                 .pixels
                 .iter()
-                .map(|RgbColor { r, g, b }| format!("{r} {g} {b} "))
+                .map(|Color { r, g, b }| format!(
+                    "{} {} {} ",
+                    (r * 255.) as u8,
+                    (g * 255.) as u8,
+                    (b * 255.) as u8
+                ))
                 .collect::<Vec<_>>()
                 .join("\n")
         );
@@ -28,7 +34,7 @@ impl Image {
 
 #[cfg(test)]
 mod test {
-    use crate::color::RgbColor;
+    use crate::color::Color;
     use crate::image::Image;
     use crate::vec3::Vec3;
 
@@ -39,10 +45,10 @@ mod test {
         let mut ps = vec![];
         for x in 0..w as i32 {
             for y in 0..r.y as i32 {
-                ps.push(RgbColor {
-                    r: if (x + y) % 2 == 0 { 255 } else { 0 },
-                    g: 0,
-                    b: 0,
+                ps.push(Color {
+                    r: if (x + y) % 2 == 0 { 1. } else { 0. },
+                    g: 0.,
+                    b: 0.,
                 });
             }
         }

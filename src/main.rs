@@ -1,5 +1,7 @@
+extern crate core;
+
 use crate::camera::Camera;
-use crate::color::RgbColor;
+use crate::color::Color;
 use crate::material::Material;
 use crate::object::Object;
 use crate::scene::Scene;
@@ -18,40 +20,66 @@ pub mod scene;
 pub mod shape;
 pub mod vec3;
 
+const ASP_RATIO: f32 = 16. / 16.;
+const WIDTH: f32 = 1080. * 1.0;
+const VP_WIDTH: f32 = 6.;
+
 fn main() {
-    let asp_ratio = 16. / 16.;
-    let width = 1080.;
-    let vp_width = 6.;
-    let scene = Scene {
-        camera: Camera {
-            resolution: Vec3::new(width, width / asp_ratio, 0.),
-            viewport: Plane {
-                center: Vec3::new(0., 0., 3.),
-                size: Vec3::new(vp_width, vp_width / asp_ratio, 0.),
-                dir: Vec3::new(1., 0., -0.2).norm(),
-            },
+    let camera = Camera {
+        resolution: Vec3::new(WIDTH, WIDTH / ASP_RATIO, 0.),
+        viewport: Plane {
+            center: Vec3::new(-20., 0., 10.),
+            size: Vec3::new(VP_WIDTH, VP_WIDTH / ASP_RATIO, 0.),
+            dir: Vec3::new(1., 0., -0.32).norm(),
         },
+    };
+    let floor = Object {
+        shape: Box::new(Sphere {
+            center: Vec3::new(0., 0., -1000.),
+            radius: 1000.,
+        }),
+        material: Material {
+            roughness: 0.8,
+            color: Color::WHITE,
+            luminosity: 0.,
+        },
+    };
+    let back_wall = Object {
+        shape: Box::new(Sphere {
+            center: Vec3::new(10., 0., 1.),
+            radius: 2.,
+        }),
+        material: Material {
+            roughness: 0.0,
+            color: Color::WHITE,
+            luminosity: 0.,
+        },
+    };
+    let scene = Scene {
+        camera,
         objects: vec![
+            floor,
+            back_wall,
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(0., 0., 300.),
-                    radius: 200.,
+                    center: Vec3::new(0., -40., 110.),
+                    radius: 100.,
                 }),
                 material: Material {
-                    diffusion: 0.,
-                    color: RgbColor::WHITE,
-                    luminosity: 1.,
+                    roughness: 0.,
+                    color: Color::WHITE,
+                    luminosity: 1.0,
                 },
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(4., 0., -100.),
-                    radius: 100.,
+                    center: Vec3::new(6., 2., 2.),
+                    radius: 0.5,
                 }),
                 material: Material {
-                    diffusion: 1.,
-                    color: RgbColor::mono(127),
-                    luminosity: 0.,
+                    roughness: 0.,
+                    color: Color::RED,
+                    luminosity: 5.,
                 },
             },
             Object {
@@ -60,30 +88,30 @@ fn main() {
                     radius: 1.,
                 }),
                 material: Material {
-                    diffusion: 1.,
-                    color: RgbColor::GREEN,
+                    roughness: 0.,
+                    color: Color::BLUE,
                     luminosity: 0.,
                 },
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(2.5, 1., 0.5),
+                    center: Vec3::new(2., 1.5, 0.5),
                     radius: 0.5,
                 }),
                 material: Material {
-                    diffusion: 1.,
-                    color: RgbColor::BLUE,
+                    roughness: 0.5,
+                    color: Color::GREEN,
                     luminosity: 0.,
                 },
             },
             Object {
                 shape: Box::new(Sphere {
-                    center: Vec3::new(2.5, -1., 0.8),
+                    center: Vec3::new(2., -1.5, 0.8),
                     radius: 0.8,
                 }),
                 material: Material {
-                    diffusion: 1.,
-                    color: RgbColor::RED,
+                    roughness: 1.,
+                    color: Color::RED,
                     luminosity: 0.,
                 },
             },

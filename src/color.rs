@@ -1,100 +1,106 @@
-use std::cmp::{max, min};
-use std::ops::Add;
+use std::cmp::{max_by, min_by};
+use std::ops::{Add, Div};
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Default)]
-pub struct RgbColor {
-    pub r: u8,
-    pub g: u8,
-    pub b: u8,
+pub struct Color {
+    pub r: f32,
+    pub g: f32,
+    pub b: f32,
 }
 
-impl RgbColor {
-    pub const BLACK: RgbColor = RgbColor::mono(0);
-    pub const WHITE: RgbColor = RgbColor::mono(255);
-    pub const RED: RgbColor = RgbColor::rgb(255, 0, 0);
-    pub const GREEN: RgbColor = RgbColor::rgb(0, 255, 0);
-    pub const BLUE: RgbColor = RgbColor::rgb(0, 0, 255);
+impl Color {
+    pub const BLACK: Color = Color::mono(0.);
+    pub const WHITE: Color = Color::mono(1.);
+    pub const RED: Color = Color::rgb(1., 0., 0.);
+    pub const GREEN: Color = Color::rgb(0., 1., 0.);
+    pub const BLUE: Color = Color::rgb(0., 0., 1.);
 
-    pub const fn rgb(r: u8, g: u8, b: u8) -> RgbColor {
-        RgbColor { r, g, b }
+    pub const fn rgb(r: f32, g: f32, b: f32) -> Color {
+        Color { r, g, b }
     }
 
-    pub const fn mono(k: u8) -> RgbColor {
-        RgbColor { r: k, g: k, b: k }
+    pub const fn mono(k: f32) -> Color {
+        Color { r: k, g: k, b: k }
     }
 
-    pub fn brighten(&self, b: f32) -> RgbColor {
-        RgbColor {
-            r: (self.r as f32 * b).clamp(0., 255.) as u8,
-            g: (self.g as f32 * b).clamp(0., 255.) as u8,
-            b: (self.b as f32 * b).clamp(0., 255.) as u8,
+    pub fn with_lightness(&self, l: f32) -> Color {
+        if l == 0. {
+            return Color::BLACK;
+        }
+        Color {
+            r: (self.r * l),
+            g: (self.g * l),
+            b: (self.b * l),
         }
     }
 
-    pub fn min(&self) -> u8 {
-        min(min(self.r, self.g), self.b)
+    pub fn clamp(&self) -> Color {
+        Color {
+            r: (self.r).clamp(0., 1.),
+            g: (self.g).clamp(0., 1.),
+            b: (self.b).clamp(0., 1.),
+        }
     }
 
-    pub fn max(&self) -> u8 {
-        max(max(self.r, self.g), self.b)
+    pub fn min(&self) -> f32 {
+        min_by(
+            min_by(self.r, self.g, |a, b| a.partial_cmp(b).unwrap()),
+            self.b,
+            |a, b| a.partial_cmp(b).unwrap(),
+        )
     }
 
-    pub fn chroma(&self) -> u8 {
+    pub fn max(&self) -> f32 {
+        max_by(
+            max_by(self.r, self.g, |a, b| a.partial_cmp(b).unwrap()),
+            self.b,
+            |a, b| a.partial_cmp(b).unwrap(),
+        )
+    }
+
+    pub fn chroma(&self) -> f32 {
         self.max() - self.min()
     }
 
-    pub fn lightness(&self) -> u8 {
-        (self.r + self.g + self.b) / 3
+    pub fn lightness(&self) -> f32 {
+        (self.r + self.g + self.b) / 3.
     }
 
-    pub fn hue(&self) -> u8 {
-        if self.chroma() == 0 {
-            return 0;
+    pub fn hue(&self) -> f32 {
+        if self.chroma() == 0. {
+            return 0.;
         }
         let max = self.max();
         let c = self.chroma();
         if self.r == max {
-            60 * (2 + (self.g - self.b) / c)
+            60. * (2. + (self.g - self.b) / c)
         } else if self.g == max {
-            60 * (2 + (self.b - self.r) / c)
+            60. * (2. + (self.b - self.r) / c)
         } else {
-            60 * (2 + (self.r - self.g) / c)
+            60. * (2. + (self.r - self.g) / c)
         }
     }
 
-    pub fn saturation(&self) -> u8 {
+    pub fn saturation(&self) -> f32 {
         let l = self.lightness();
-        if l == 0 || l == 1 {
-            0
+        if l == 0. || l == 1. {
+            0.
         } else {
-            (self.max() - l) / min(l, 1 - l)
+            (self.max() - l) / min_by(l, 1. - l, |a, b| a.partial_cmp(b).unwrap())
         }
     }
 }
 
-impl Add for RgbColor {
+impl Add for Color {
     type Output = Self;
     fn add(self, rhs: Self) -> Self::Output {
-        RgbColor {
-            r: (self.r + rhs.r).clamp(0, 255),
-            g: (self.g + rhs.g).clamp(0, 255),
-            b: (self.b + rhs.b).clamp(0, 255),
+        Color {
+            r: (self.r + rhs.r).div(2.).clamp(0., 1.),
+            g: (self.g + rhs.g).div(2.).clamp(0., 1.),
+            b: (self.b + rhs.b).div(2.).clamp(0., 1.),
         }
     }
 }
 
-pub struct HslColor {
-    pub h: u8,
-    pub s: u8,
-    pub l: u8,
-}
-
-impl From<RgbColor> for HslColor {
-    fn from(value: RgbColor) -> Self {
-        HslColor {
-            h: value.hue(),
-            s: value.saturation(),
-            l: value.lightness(),
-        }
-    }
-}
+#[cfg(test)]
+mod test {}

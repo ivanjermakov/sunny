@@ -8,7 +8,9 @@ pub mod sphere;
 
 pub trait Shape: Debug + Send + Sync {
     /// Reflect a ray of the shape's surface
-    fn reflect(&self, ray: &Ray) -> Option<Ray>;
-    
-    fn random_point_inside(&self) -> Vec3;
+    fn reflect(&self, ray: &Ray) -> Option<(Ray, Vec3)>;
+
+    fn center(&self) -> Vec3;
+
+    fn even_points(&self, count: usize, normal: Vec3) -> Vec<Vec3>;
 }

@@ -1,5 +1,7 @@
 use std::ops;
 
+use rand::random;
+
 use crate::math::approx_eq;
 
 #[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Default)]
@@ -20,6 +22,15 @@ impl Vec3 {
 
     pub fn diag(v: f32) -> Vec3 {
         Vec3::new(v, v, v)
+    }
+
+    /// Create a random unit vector in range (-1, 1)
+    pub fn rand() -> Vec3 {
+        Vec3 {
+            x: random::<f32>() * 0.5 - 0.5,
+            y: random::<f32>() * 0.5 - 0.5,
+            z: random::<f32>() * 0.5 - 0.5,
+        }
     }
 
     pub fn with_x(&self, x: f32) -> Vec3 {
@@ -121,6 +132,16 @@ impl Vec3 {
         }
     }
 
+    pub fn rotate_around(&self, angle: f32, axis: &Vec3) -> Vec3 {
+        self.mul_n(angle.cos())
+            + self.cross(axis).mul_n(angle.sin())
+            + axis.mul_n(axis.dot(self) * (1. - angle.cos()))
+    }
+
+    pub fn mul_n(&self, n: f32) -> Vec3 {
+        *self * Vec3::diag(n)
+    }
+
     pub fn approx_eq(&self, other: &Vec3) -> bool {
         approx_eq(self.x, other.x) && approx_eq(self.y, other.y) && approx_eq(self.z, other.z)
     }
@@ -128,6 +149,14 @@ impl Vec3 {
     /// [ref](https://math.stackexchange.com/a/13263/1028553)
     pub fn reflect(&self, n: &Vec3) -> Vec3 {
         *self - Vec3::diag(2. * self.dot(n)) * *n
+    }
+
+    pub fn orth(&self) -> Vec3 {
+        Vec3 {
+            x: self.x.copysign(self.z),
+            y: self.y.copysign(self.z),
+            z: -self.z.copysign(self.x) - self.z.copysign(self.y),
+        }
     }
 }
 
@@ -168,5 +197,17 @@ impl ops::Neg for Vec3 {
 
     fn neg(self) -> Self::Output {
         Vec3::new(-self.x, -self.y, -self.z)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::vec3::Vec3;
+
+    #[test]
+    fn orth() {
+        let v = Vec3::new(1., 0., 0.);
+        let o = v.orth();
+        assert!(v.mag().eq(&o.mag()))
     }
 }

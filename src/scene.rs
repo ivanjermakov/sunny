@@ -1,11 +1,15 @@
 use rayon::prelude::*;
 
 use crate::camera::Camera;
-use crate::color::RgbColor;
+use crate::color::Color;
 use crate::image::Image;
 use crate::object::Object;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
+
+const PIXEL_PASS_COUNT: usize = 400;
+const REFLECTION_DEPTH: usize = 8;
+const AMBIENT_COLOR: Color = Color::rgb(0.1, 0.3, 0.5);
 
 #[derive(Debug)]
 pub struct Scene {
@@ -22,8 +26,21 @@ impl Scene {
             .map(|i| {
                 let y = i / w;
                 let x = (y / w) + (i % w);
-                let cr = self.camera.camera_ray(Vec3::new(x as f32, y as f32, 0.));
-                self.ray_trace(&cr, 0).unwrap_or(RgbColor::BLACK)
+                (0..PIXEL_PASS_COUNT)
+                    .filter_map(|_| {
+                        let cr = self.camera.camera_ray(Vec3::new(x as f32, y as f32, 0.));
+                        self.ray_trace(&cr, 0)
+                    })
+                    .enumerate()
+                    .fold(Color::BLACK, |c1, (i, c2)| {
+                        let i_f = i as f32;
+                        let n_f = i_f + 1.;
+                        Color::rgb(
+                            (c1.r * i_f + c2.r) / n_f,
+                            (c1.g * i_f + c2.g) / n_f,
+                            (c1.b * i_f + c2.b) / n_f,
+                        )
+                    })
             })
             .collect();
         Image {
@@ -32,58 +49,40 @@ impl Scene {
         }
     }
 
-    pub fn ray_trace(&self, ray: &Ray, depth: usize) -> Option<RgbColor> {
-        let max_depth = 2;
-        let shadow_samples = 100;
-        if depth > max_depth {
-            return None;
+    pub fn ray_trace(&self, ray: &Ray, depth: usize) -> Option<Color> {
+        if depth >= REFLECTION_DEPTH {
+            return Some(Color::BLACK);
         }
-        if let Some((o, r)) = self.reflect(ray) {
-            return if o.material.luminosity > 0. {
-                Some(o.material.color)
-            } else if o.material.diffusion > 0. {
-                let color = self
-                    .objects
-                    .iter()
-                    .filter(|o| o.material.luminosity > 0.)
-                    .map(|l| {
-                        let hits = (0..shadow_samples)
-                            .filter_map(|_| {
-                                let light_p = o.shape.random_point_inside();
-                                let sh_normal = (r.start - light_p).norm();
-                                let sh_ray = Ray {
-                                    start: r.start,
-                                    dir: sh_normal,
-                                };
-                                self.reflect(&sh_ray)
-                                    .filter(|(o, _)| o.material.luminosity > 0.)
-                                    .map(|_| ())
-                            })
-                            .count();
-                        o.material.color.brighten(
-                            (hits as f32 * l.material.luminosity / shadow_samples as f32).cbrt(),
-                        )
-                    })
-                    .reduce(|a, b| a + b)
-                    .unwrap_or(RgbColor::BLACK);
-                Some(color)
-            } else {
-                self.ray_trace(&r, depth + 1)
+        if let Some((ref_o, ref_n, ref_r)) = self.reflect(ray) {
+            if ref_o.material.luminosity > 0. {
+                let angle = (-ray.dir).cos_angle(&ref_n) * 0.5 + 0.5;
+                return Some(
+                    ref_o
+                        .material
+                        .color
+                        .with_lightness(ref_o.material.luminosity * angle),
+                );
             };
+            let next = Ray {
+                start: ref_r.start,
+                dir: (ref_r.dir + (Vec3::rand()).mul_n(1.0).mul_n(ref_o.material.roughness)).norm(),
+            };
+            self.ray_trace(&next, depth + 1)
         } else {
-            None
+            let angle = (ray.dir).cos_angle(&self.camera.viewport.dir) * 0.5 + 0.5;
+            Some(AMBIENT_COLOR.with_lightness(1. - angle))
         }
     }
 
-    pub fn reflect(&self, ray: &Ray) -> Option<(&Object, Ray)> {
+    pub fn reflect(&self, ray: &Ray) -> Option<(&Object, Vec3, Ray)> {
         let mut c_len = f32::MAX;
-        let mut closest: Option<(&Object, Ray)> = None;
+        let mut closest: Option<(&Object, Vec3, Ray)> = None;
         for o in &self.objects {
-            if let Some(reflection) = o.shape.reflect(ray) {
+            if let Some((reflection, norm)) = o.shape.reflect(ray) {
                 let len = ray.start.dist(&reflection.start);
                 if len < c_len {
                     c_len = len;
-                    closest = Some((o, reflection))
+                    closest = Some((o, norm, reflection))
                 }
             }
         }
