@@ -1,3 +1,4 @@
+use std::f32::consts::PI;
 use std::ops;
 
 use rand::random;
@@ -26,11 +27,10 @@ impl Vec3 {
 
     /// Create a random unit vector in range (-1, 1)
     pub fn rand() -> Vec3 {
-        Vec3 {
-            x: random::<f32>() * 0.5 - 0.5,
-            y: random::<f32>() * 0.5 - 0.5,
-            z: random::<f32>() * 0.5 - 0.5,
-        }
+        Vec3::new(1., 0., 0.)
+            .rotate_z(random::<f32>() * 2. * PI)
+            .rotate_x(random::<f32>() * 2. * PI)
+            .norm()
     }
 
     pub fn with_x(&self, x: f32) -> Vec3 {
