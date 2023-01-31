@@ -1,7 +1,7 @@
-use std::f32::consts::PI;
 use std::ops;
 
-use rand::random;
+use rand::{thread_rng, Rng};
+use rand_distr::StandardNormal;
 
 use crate::math::approx_eq;
 
@@ -27,10 +27,16 @@ impl Vec3 {
 
     /// Create a random unit vector in range (-1, 1)
     pub fn rand() -> Vec3 {
-        Vec3::new(1., 0., 0.)
-            .rotate_z(random::<f32>() * 2. * PI)
-            .rotate_x(random::<f32>() * 2. * PI)
-            .norm()
+        let mut rng = thread_rng();
+        let x: f32 = rng.sample(StandardNormal);
+        let y: f32 = rng.sample(StandardNormal);
+        let z: f32 = rng.sample(StandardNormal);
+        let mag = (x * x + y * y + z * z).sqrt();
+        Vec3 {
+            x: x / mag,
+            y: y / mag,
+            z: z / mag,
+        }
     }
 
     pub fn with_x(&self, x: f32) -> Vec3 {
@@ -50,7 +56,7 @@ impl Vec3 {
     }
 
     pub fn mag(&self) -> f32 {
-        (self.x.powf(2.) + self.y.powf(2.) + self.z.powf(2.)).sqrt()
+        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
     pub fn dot(&self, other: &Vec3) -> f32 {

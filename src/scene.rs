@@ -76,8 +76,7 @@ impl Scene {
                     + rc.mul_n(m.specularity)
             })
         } else {
-            // TODO: fix angle
-            let angle = (ray.dir).cos_angle(&self.camera.viewport.dir) * 0.5 + 0.5;
+            let angle = (ray.dir).cos_angle(&self.camera.viewport.dir).clamp(0., 1.);
             Some(AMBIENT_COLOR.with_lightness(angle))
         }
     }
