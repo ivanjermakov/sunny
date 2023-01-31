@@ -1,5 +1,3 @@
-use std::f32::consts::PI;
-
 use crate::ray::Ray;
 use crate::shape::plane::Plane;
 use crate::vec3::Vec3;
@@ -12,17 +10,18 @@ pub struct Camera {
 }
 
 impl Camera {
-    // TODO: incorrect center
     /// Create a ray coming from the center of a specified resolution pixel at viewport direction
     pub fn camera_ray(&self, px: Vec3) -> Ray {
-        let vp_tr = (((px + Vec3::new(0.5, 0.5, 0.)) * self.viewport.size) / self.resolution)
-            .with_z(0.)
-            .rotate_z(-PI / 2.)
-            .rotate_y(PI / 2.);
-        let top = (Vec3::diag(self.viewport.size.y / 2.) * self.viewport.dir).rotate_y(-PI / 2.);
-        let left = (Vec3::diag(self.viewport.size.x / 2.) * self.viewport.dir).rotate_z(PI / 2.);
-        let top_left = top + left;
-        let vp_p = top_left + vp_tr;
+        let vp_tr = ((px + Vec3::new(0.5, 0.5, 0.)) * self.viewport.size) / self.resolution;
+        let z = Vec3::new(0., 0., 1.).norm();
+        let y = z.cross(&self.viewport.dir).norm();
+        let top = self
+            .viewport
+            .dir
+            .cross(&y)
+            .mul_n(self.viewport.size.y / 2. - vp_tr.y);
+        let left = y.mul_n(self.viewport.size.x / 2. - vp_tr.x);
+        let vp_p = top + left;
         let fp = self.viewport.dir.mul_n(-self.focal_len);
         let dir = (vp_p - fp).norm();
         Ray {

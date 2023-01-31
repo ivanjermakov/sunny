@@ -93,7 +93,7 @@ impl Color {
         }
     }
 
-    pub fn mul(self, n: f32) -> Color {
+    pub fn mul_n(self, n: f32) -> Color {
         Color {
             r: (self.r * n).div(2.),
             g: (self.g * n).div(2.),

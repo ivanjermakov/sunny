@@ -16,6 +16,14 @@ pub struct Scene {
 
 impl Scene {
     pub fn render(&self) -> Image {
+        let y = Vec3::new(0., 0., 1.)
+            .norm()
+            .cross(&self.camera.viewport.dir)
+            .norm();
+        if y.mag() == 0. {
+            panic!("don't look parallel to z axis, idk where is up");
+        }
+
         let w = self.camera.resolution.x as i32;
         let h = self.camera.resolution.y as i32;
         let ps = (0..w * h)
@@ -63,13 +71,14 @@ impl Scene {
             // TODO: optimize inside-reflected rays
             self.ray_trace(&next, depth + 1).map(|rc| {
                 m.color
-                    .mul(1. - m.specularity)
+                    .mul_n(1. - m.specularity)
                     .with_lightness(rc.lightness())
-                    + rc.mul(m.specularity)
+                    + rc.mul_n(m.specularity)
             })
         } else {
+            // TODO: fix angle
             let angle = (ray.dir).cos_angle(&self.camera.viewport.dir) * 0.5 + 0.5;
-            Some(AMBIENT_COLOR.with_lightness(1. - angle))
+            Some(AMBIENT_COLOR.with_lightness(angle))
         }
     }
 
